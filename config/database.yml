@@ -1,0 +1,31 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+development:
+  <<: *default
+  database: link_shortener_api_development
+
+test:
+  <<: *default
+  database: link_shortener_api_test
+
+production:
+  primary: &primary_production
+    <<: *default
+    database: link_shortener_api_production
+    username: link_shortener_api
+    password: <%= ENV["LINK_SHORTENER_API_DATABASE_PASSWORD"] %>
+  cache:
+    <<: *primary_production
+    database: link_shortener_api_production_cache
+    migrations_paths: db/cache_migrate
+  queue:
+    <<: *primary_production
+    database: link_shortener_api_production_queue
+    migrations_paths: db/queue_migrate
+  cable:
+    <<: *primary_production
+    database: link_shortener_api_production_cable
+    migrations_paths: db/cable_migrate
