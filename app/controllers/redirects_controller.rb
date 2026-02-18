@@ -24,13 +24,6 @@ class RedirectsController < ApplicationController
     RecordClickJob.perform_later(**payload)
   rescue StandardError => e
     Rails.logger.error("Failed to enqueue RecordClickJob: #{e.class}: #{e.message}")
-    begin
-      RecordClickJob.perform_now(**payload)
-    rescue StandardError => fallback_error
-      Rails.logger.error(
-        "Failed to record click inline after enqueue failure: #{fallback_error.class}: #{fallback_error.message}"
-      )
-    end
   end
 
   def valid_redirect_url?(url)
