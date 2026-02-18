@@ -30,6 +30,18 @@ RSpec.describe Link, type: :model do
       expect(link).not_to be_valid
     end
 
+    it 'only allows alphanumeric short_codes' do
+      link = Link.new(short_code: 'abc-123', target_url: 'https://test.com')
+      expect(link).not_to be_valid
+      expect(link.errors[:short_code]).to include 'only allows letters and numbers'
+    end
+
+    it 'treats short_code uniqueness as case-sensitive' do
+      Link.create!(short_code: 'AbCd123', target_url: 'https://test.com')
+      link_2 = Link.new(short_code: 'abcd123', target_url: 'https://test2.com')
+      expect(link_2).to be_valid
+    end
+
     it 'removes whitespace from target_url' do
       link = Link.new(short_code: 'abc1234', target_url: '  https://test.com  ')
       link.valid?
