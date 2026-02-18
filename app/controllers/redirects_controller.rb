@@ -4,10 +4,11 @@ class RedirectsController < ApplicationController
     return render json: { error: "Short link not found" }, status: :not_found unless link
 
     if request.get?
-      Clicks::RecorderService.call(
-        link: link,
+      RecordClickJob.perform_later(
+        link_id: link.id,
         ip: request.remote_ip,
-        user_agent: request.user_agent
+        user_agent: request.user_agent,
+        timestamp: Time.current.iso8601
       )
     end
 

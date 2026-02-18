@@ -4,9 +4,9 @@ module Api
       def create
         link = Link.create!(
           short_code: Links::ShortCodeGenerator.call,
-          target_url: link_params[:target_url],
-          title: Links::TitleFetcher.call(link_params[:target_url])
+          target_url: link_params[:target_url]
         )
+        FetchLinkTitleJob.perform_later(link.id)
 
         render json: {
           short_code: link.short_code,
