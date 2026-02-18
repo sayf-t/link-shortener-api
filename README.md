@@ -97,9 +97,18 @@ Response (200):
   "title": "Example Page Title",
   "total_clicks": 42,
   "clicks_by_country": { "SG": 25, "US": 10, "UNKNOWN": 7 },
-  "clicks_by_date": { "2026-02-17": 20, "2026-02-18": 22 }
+  "clicks_by_date": { "2026-02-17": 20, "2026-02-18": 22 },
+  "visits": [
+    { "timestamp": "2026-02-18T14:30:12Z", "geo_country": "US" },
+    { "timestamp": "2026-02-18T14:28:36Z", "geo_country": "SG" },
+    { "timestamp": "2026-02-17T10:15:22Z", "geo_country": "UNKNOWN" }
+  ]
 }
 ```
+
+The `visits` array contains individual visit records ordered by timestamp (most recent first). Each visit includes:
+- `timestamp` - ISO8601 formatted timestamp of when the visit occurred
+- `geo_country` - Two-letter country code from IP geolocation, or `"UNKNOWN"` for private/loopback IPs or failed lookups
 
 Country codes come from IP geolocation. Clicks from private/loopback IPs or failed lookups show as `"UNKNOWN"`.
 
@@ -148,4 +157,4 @@ app/
 
 ## Deployed URL
 
-_TODO: add deployment URL once deployed_
+https://link-shortener-api-vdgy.onrender.com
