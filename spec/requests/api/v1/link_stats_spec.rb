@@ -33,7 +33,7 @@ RSpec.describe "Api::V1::LinkStats", type: :request do
       body = response.parsed_body
       expect(body["clicks_by_country"]).to eq("UNKNOWN" => 2, "SG" => 1)
       expect(body["clicks_by_country"].keys).not_to include("", nil)
-      expect(body["visits"].map { |v| v["geo_country"] }).to match_array(["UNKNOWN", "UNKNOWN", "SG"])
+      expect(body["visits"].map { |v| v["geo_country"] }).to match_array([ "UNKNOWN", "UNKNOWN", "SG" ])
     end
 
     it "returns 404 for a missing short_code" do
