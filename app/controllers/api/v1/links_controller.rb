@@ -27,13 +27,13 @@ module Api
           total_clicks: events.count,
           clicks_by_country: events.group(:geo_country).count,
           clicks_by_date: events.group("DATE(timestamp)").count
-        }, status: :ok
+        }
       end
 
       private
 
       def link_params
-        params.require(:link).permit(:target_url)
+        params.expect(link: [ :target_url ])
       end
     end
   end

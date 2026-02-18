@@ -1,33 +1,39 @@
-class Links::TitleFetcher
-  CONNECTION_TIMEOUT_SECONDS = 3
-  REQUEST_TIMEOUT_SECONDS = 5
-  TITLE_REGEX = %r{<title[^>]*>(.*?)</title>}im
+module Links
+  class TitleFetcher
+    CONNECT_TIMEOUT = 3
+    READ_TIMEOUT = 5
+    TITLE_PATTERN = %r{<title[^>]*>(.*?)</title>}im
 
-  def self.call(url)
-    normalized_url = url.to_s.strip
-    return nil if normalized_url.blank?
-
-    response = Faraday.get(normalized_url) do |request|
-      request.options.open_timeout = CONNECTION_TIMEOUT_SECONDS
-      request.options.timeout = REQUEST_TIMEOUT_SECONDS
+    def self.call(url)
+      new(url).call
     end
 
-    return nil unless response.success?
+    def initialize(url)
+      @url = url.to_s.strip
+    end
 
-    extract_title(response.body)
-  rescue Faraday::Error, URI::InvalidURIError, ArgumentError
-    nil
+    def call
+      return nil if @url.blank?
+
+      response = Faraday.get(@url) do |req|
+        req.options.open_timeout = CONNECT_TIMEOUT
+        req.options.timeout = READ_TIMEOUT
+      end
+
+      return nil unless response.success?
+
+      extract_title(response.body)
+    rescue Faraday::Error, URI::InvalidURIError, ArgumentError
+      nil
+    end
+
+    private
+
+    def extract_title(html)
+      return nil if html.blank?
+
+      match = html.match(TITLE_PATTERN)
+      match && match[1].strip.presence
+    end
   end
-
-  def self.extract_title(body)
-    return nil if body.blank?
-
-    match = body.match(TITLE_REGEX)
-    return nil unless match
-
-    title = match[1].to_s.strip
-    title.present? ? title : nil
-  end
-
-  private_class_method :extract_title
 end

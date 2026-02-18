@@ -1,15 +1,15 @@
-require 'rails_helper'
+require "rails_helper"
 
-RSpec.describe 'Redirects', type: :request do
-  describe 'GET /:short_code' do
-    it 'redirects to target_url and records click event' do
-      link = Link.create!(short_code: 'redir123', target_url: 'https://example.com')
+RSpec.describe "Redirects", type: :request do
+  let!(:link) { create(:link, short_code: "redir12", target_url: "https://example.com") }
+
+  describe "GET /:short_code" do
+    it "redirects and records the click" do
       allow(Clicks::RecorderService).to receive(:call)
 
-      get '/redir123'
+      get "/redir12"
 
-      expect(response).to have_http_status(:found)
-      expect(response.headers['Location']).to eq('https://example.com')
+      expect(response).to redirect_to("https://example.com")
       expect(Clicks::RecorderService).to have_received(:call).with(
         link: link,
         ip: anything,
@@ -17,24 +17,22 @@ RSpec.describe 'Redirects', type: :request do
       )
     end
 
-    it 'returns 404 for unknown short_code' do
-      get '/unknown123'
+    it "returns 404 for unknown codes" do
+      get "/unknown1"
 
       expect(response).to have_http_status(:not_found)
-      body = JSON.parse(response.body)
-      expect(body['error']).to eq('Short link not found')
+      expect(response.parsed_body["error"]).to eq("Short link not found")
     end
   end
 
-  describe 'HEAD /:short_code' do
-    it 'returns redirect headers without recording click event' do
-      Link.create!(short_code: 'head123', target_url: 'https://example.com')
+  describe "HEAD /:short_code" do
+    it "redirects without recording a click" do
       allow(Clicks::RecorderService).to receive(:call)
 
-      head '/head123'
+      head "/redir12"
 
       expect(response).to have_http_status(:found)
-      expect(response.headers['Location']).to eq('https://example.com')
+      expect(response.headers["Location"]).to eq("https://example.com")
       expect(Clicks::RecorderService).not_to have_received(:call)
     end
   end

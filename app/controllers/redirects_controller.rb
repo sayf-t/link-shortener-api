@@ -1,7 +1,7 @@
 class RedirectsController < ApplicationController
   def show
-    link = Links::ResolveService.call(params[:short_code])
-    return render json: { error: 'Short link not found' }, status: :not_found if link.nil?
+    link = Link.find_by(short_code: params[:short_code])
+    return render json: { error: "Short link not found" }, status: :not_found unless link
 
     if request.get?
       Clicks::RecorderService.call(
