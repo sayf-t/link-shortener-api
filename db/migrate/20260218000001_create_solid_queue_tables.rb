@@ -1,6 +1,6 @@
 class CreateSolidQueueTables < ActiveRecord::Migration[7.1]
   def change
-    create_table :solid_queue_jobs do |t|
+    create_table :solid_queue_jobs, if_not_exists: true do |t|
       t.string :queue_name, null: false
       t.string :class_name, null: false
       t.text :arguments
@@ -19,7 +19,7 @@ class CreateSolidQueueTables < ActiveRecord::Migration[7.1]
       t.index [ :scheduled_at, :finished_at ], name: "index_solid_queue_jobs_for_alerting"
     end
 
-    create_table :solid_queue_blocked_executions do |t|
+    create_table :solid_queue_blocked_executions, if_not_exists: true do |t|
       t.bigint :job_id, null: false
       t.string :queue_name, null: false
       t.integer :priority, default: 0, null: false
@@ -32,7 +32,7 @@ class CreateSolidQueueTables < ActiveRecord::Migration[7.1]
       t.index [ :job_id ], name: "index_solid_queue_blocked_executions_on_job_id", unique: true
     end
 
-    create_table :solid_queue_claimed_executions do |t|
+    create_table :solid_queue_claimed_executions, if_not_exists: true do |t|
       t.bigint :job_id, null: false
       t.bigint :process_id
       t.datetime :created_at, null: false
@@ -41,7 +41,7 @@ class CreateSolidQueueTables < ActiveRecord::Migration[7.1]
       t.index [ :process_id, :job_id ], name: "index_solid_queue_claimed_executions_on_process_id_and_job_id"
     end
 
-    create_table :solid_queue_failed_executions do |t|
+    create_table :solid_queue_failed_executions, if_not_exists: true do |t|
       t.bigint :job_id, null: false
       t.text :error
       t.datetime :created_at, null: false
@@ -49,14 +49,14 @@ class CreateSolidQueueTables < ActiveRecord::Migration[7.1]
       t.index [ :job_id ], name: "index_solid_queue_failed_executions_on_job_id", unique: true
     end
 
-    create_table :solid_queue_pauses do |t|
+    create_table :solid_queue_pauses, if_not_exists: true do |t|
       t.string :queue_name, null: false
       t.datetime :created_at, null: false
 
       t.index [ :queue_name ], name: "index_solid_queue_pauses_on_queue_name", unique: true
     end
 
-    create_table :solid_queue_processes do |t|
+    create_table :solid_queue_processes, if_not_exists: true do |t|
       t.string :kind, null: false
       t.datetime :last_heartbeat_at, null: false
       t.bigint :supervisor_id
@@ -71,7 +71,7 @@ class CreateSolidQueueTables < ActiveRecord::Migration[7.1]
       t.index [ :supervisor_id ], name: "index_solid_queue_processes_on_supervisor_id"
     end
 
-    create_table :solid_queue_ready_executions do |t|
+    create_table :solid_queue_ready_executions, if_not_exists: true do |t|
       t.bigint :job_id, null: false
       t.string :queue_name, null: false
       t.integer :priority, default: 0, null: false
@@ -82,7 +82,7 @@ class CreateSolidQueueTables < ActiveRecord::Migration[7.1]
       t.index [ :queue_name, :priority, :job_id ], name: "index_solid_queue_poll_by_queue"
     end
 
-    create_table :solid_queue_recurring_executions do |t|
+    create_table :solid_queue_recurring_executions, if_not_exists: true do |t|
       t.bigint :job_id, null: false
       t.string :task_key, null: false
       t.datetime :run_at, null: false
@@ -92,7 +92,7 @@ class CreateSolidQueueTables < ActiveRecord::Migration[7.1]
       t.index [ :task_key, :run_at ], name: "index_solid_queue_recurring_executions_on_task_key_and_run_at", unique: true
     end
 
-    create_table :solid_queue_recurring_tasks do |t|
+    create_table :solid_queue_recurring_tasks, if_not_exists: true do |t|
       t.string :key, null: false
       t.string :schedule, null: false
       t.string :command, limit: 2048
@@ -109,7 +109,7 @@ class CreateSolidQueueTables < ActiveRecord::Migration[7.1]
       t.index [ :static ], name: "index_solid_queue_recurring_tasks_on_static"
     end
 
-    create_table :solid_queue_scheduled_executions do |t|
+    create_table :solid_queue_scheduled_executions, if_not_exists: true do |t|
       t.bigint :job_id, null: false
       t.string :queue_name, null: false
       t.integer :priority, default: 0, null: false
@@ -120,7 +120,7 @@ class CreateSolidQueueTables < ActiveRecord::Migration[7.1]
       t.index [ :scheduled_at, :priority, :job_id ], name: "index_solid_queue_dispatch_all"
     end
 
-    create_table :solid_queue_semaphores do |t|
+    create_table :solid_queue_semaphores, if_not_exists: true do |t|
       t.string :key, null: false
       t.integer :value, default: 1, null: false
       t.datetime :expires_at, null: false
@@ -132,11 +132,11 @@ class CreateSolidQueueTables < ActiveRecord::Migration[7.1]
       t.index [ :key ], name: "index_solid_queue_semaphores_on_key", unique: true
     end
 
-    add_foreign_key :solid_queue_blocked_executions, :solid_queue_jobs, column: :job_id, on_delete: :cascade
-    add_foreign_key :solid_queue_claimed_executions, :solid_queue_jobs, column: :job_id, on_delete: :cascade
-    add_foreign_key :solid_queue_failed_executions, :solid_queue_jobs, column: :job_id, on_delete: :cascade
-    add_foreign_key :solid_queue_ready_executions, :solid_queue_jobs, column: :job_id, on_delete: :cascade
-    add_foreign_key :solid_queue_recurring_executions, :solid_queue_jobs, column: :job_id, on_delete: :cascade
-    add_foreign_key :solid_queue_scheduled_executions, :solid_queue_jobs, column: :job_id, on_delete: :cascade
+    add_foreign_key :solid_queue_blocked_executions, :solid_queue_jobs, column: :job_id, on_delete: :cascade unless foreign_key_exists?(:solid_queue_blocked_executions, :solid_queue_jobs)
+    add_foreign_key :solid_queue_claimed_executions, :solid_queue_jobs, column: :job_id, on_delete: :cascade unless foreign_key_exists?(:solid_queue_claimed_executions, :solid_queue_jobs)
+    add_foreign_key :solid_queue_failed_executions, :solid_queue_jobs, column: :job_id, on_delete: :cascade unless foreign_key_exists?(:solid_queue_failed_executions, :solid_queue_jobs)
+    add_foreign_key :solid_queue_ready_executions, :solid_queue_jobs, column: :job_id, on_delete: :cascade unless foreign_key_exists?(:solid_queue_ready_executions, :solid_queue_jobs)
+    add_foreign_key :solid_queue_recurring_executions, :solid_queue_jobs, column: :job_id, on_delete: :cascade unless foreign_key_exists?(:solid_queue_recurring_executions, :solid_queue_jobs)
+    add_foreign_key :solid_queue_scheduled_executions, :solid_queue_jobs, column: :job_id, on_delete: :cascade unless foreign_key_exists?(:solid_queue_scheduled_executions, :solid_queue_jobs)
   end
 end
