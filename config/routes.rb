@@ -12,4 +12,6 @@ Rails.application.routes.draw do
       end
     end
   end
+
+  get "/:short_code", to: "redirects#show", constraints: { short_code: /[0-9A-Za-z]+/ }
 end
