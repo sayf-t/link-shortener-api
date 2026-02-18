@@ -35,4 +35,16 @@ RSpec.describe "Redirects", type: :request do
       expect(RecordClickJob).not_to have_been_enqueued
     end
   end
+
+  describe "invalid stored redirect URL" do
+    it "returns 422 instead of redirecting" do
+      link.update_column(:target_url, "javascript:alert(1)")
+
+      get "/redir12"
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["error"]).to eq("Invalid redirect URL")
+      expect(RecordClickJob).not_to have_been_enqueued
+    end
+  end
 end
