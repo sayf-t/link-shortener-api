@@ -13,10 +13,9 @@ Rails.application.configure do
 
   config.active_support.report_deprecations = false
 
-  config.cache_store = :solid_cache_store
+  config.cache_store = :memory_store
 
-  config.active_job.queue_adapter = :solid_queue
-  config.solid_queue.connects_to = { database: { writing: :queue } }
+  config.active_job.queue_adapter = :async
 
   config.i18n.fallbacks = true
   config.active_record.dump_schema_after_migration = false
