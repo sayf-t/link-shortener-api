@@ -31,9 +31,18 @@ module Clicks
 
     def resolve_country
       return nil if @ip.blank?
-      Geocoder.search(@ip).first&.country_code
+      return nil unless geocodable_ip?
+
+      Geocoder.search(@ip).first&.country_code.then { |code| code.presence }
     rescue StandardError
       nil
+    end
+
+    def geocodable_ip?
+      addr = IPAddr.new(@ip)
+      !(addr.loopback? || addr.private? || addr.link_local?)
+    rescue IPAddr::InvalidAddressError
+      false
     end
   end
 end
