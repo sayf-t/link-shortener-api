@@ -31,5 +31,32 @@ RSpec.describe Clicks::RecorderService do
       event = described_class.call(link: link, ip: "1.1.1.1", user_agent: "RSpec")
       expect(event.geo_country).to be_nil
     end
+
+    it "skips geocoding for loopback IPs" do
+      allow(Geocoder).to receive(:search)
+
+      event = described_class.call(link: link, ip: "127.0.0.1", user_agent: "RSpec")
+
+      expect(event.geo_country).to be_nil
+      expect(Geocoder).not_to have_received(:search)
+    end
+
+    it "skips geocoding for private IPs" do
+      allow(Geocoder).to receive(:search)
+
+      event = described_class.call(link: link, ip: "192.168.1.1", user_agent: "RSpec")
+
+      expect(event.geo_country).to be_nil
+      expect(Geocoder).not_to have_received(:search)
+    end
+
+    it "skips geocoding for IPv6 loopback" do
+      allow(Geocoder).to receive(:search)
+
+      event = described_class.call(link: link, ip: "::1", user_agent: "RSpec")
+
+      expect(event.geo_country).to be_nil
+      expect(Geocoder).not_to have_received(:search)
+    end
   end
 end
