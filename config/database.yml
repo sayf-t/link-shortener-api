@@ -14,6 +14,7 @@ test:
 production:
   primary: &primary_production
     <<: *default
+    url: <%= ENV["DATABASE_URL"] %>
     database: link_shortener_api_production
     username: link_shortener_api
     password: <%= ENV["LINK_SHORTENER_API_DATABASE_PASSWORD"] %>
