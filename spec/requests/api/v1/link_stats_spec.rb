@@ -15,6 +15,11 @@ RSpec.describe "Api::V1::LinkStats", type: :request do
       expect(body["title"]).to eq("My Page")
       expect(body["total_clicks"]).to eq(2)
       expect(body["clicks_by_country"]).to include("SG" => 1, "US" => 1)
+      expect(body["visits"]).to be_an(Array)
+      expect(body["visits"].length).to eq(2)
+      expect(body["visits"].first).to include("timestamp", "geo_country")
+      expect(body["visits"].first["geo_country"]).to eq("US")
+      expect(body["visits"].last["geo_country"]).to eq("SG")
     end
 
     it "maps nil geo_country to UNKNOWN" do
@@ -28,6 +33,7 @@ RSpec.describe "Api::V1::LinkStats", type: :request do
       body = response.parsed_body
       expect(body["clicks_by_country"]).to eq("UNKNOWN" => 2, "SG" => 1)
       expect(body["clicks_by_country"].keys).not_to include("", nil)
+      expect(body["visits"].map { |v| v["geo_country"] }).to match_array(["UNKNOWN", "UNKNOWN", "SG"])
     end
 
     it "returns 404 for a missing short_code" do

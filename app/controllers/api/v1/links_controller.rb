@@ -27,7 +27,13 @@ module Api
           title: link.title,
           total_clicks: events.count,
           clicks_by_country: normalize_country_buckets(events.group(:geo_country).count),
-          clicks_by_date: events.group("DATE(timestamp)").count
+          clicks_by_date: events.group("DATE(timestamp)").count,
+          visits: events.order(timestamp: :desc).map { |event|
+            {
+              timestamp: event.timestamp.iso8601,
+              geo_country: event.geo_country.presence || "UNKNOWN"
+            }
+          }
         }
       end
 
