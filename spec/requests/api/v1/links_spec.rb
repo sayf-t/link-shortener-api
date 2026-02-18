@@ -28,5 +28,16 @@ RSpec.describe "Api::V1::Links", type: :request do
       body = response.parsed_body
       expect(body["errors"].join).to include("must be a valid HTTP or HTTPS URL")
     end
+
+    it "still creates a short link when enqueue fails" do
+      allow(FetchLinkTitleJob).to receive(:perform_later).and_raise(ActiveJob::EnqueueError, "boom")
+
+      post "/api/v1/links", params: { link: { target_url: "https://example.com" } }
+
+      expect(response).to have_http_status(:created)
+      body = response.parsed_body
+      expect(body["short_code"]).to eq("abc1234")
+      expect(body["target_url"]).to eq("https://example.com")
+    end
   end
 end

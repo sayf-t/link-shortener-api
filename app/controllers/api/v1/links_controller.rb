@@ -6,7 +6,7 @@ module Api
           short_code: Links::ShortCodeGenerator.call,
           target_url: link_params[:target_url]
         )
-        FetchLinkTitleJob.perform_later(link.id)
+        enqueue_link_title_fetch(link)
 
         render json: {
           short_code: link.short_code,
@@ -39,6 +39,14 @@ module Api
       end
 
       private
+
+      def enqueue_link_title_fetch(link)
+        FetchLinkTitleJob.perform_later(link.id)
+      rescue StandardError => e
+        Rails.logger.error(
+          "Failed to enqueue FetchLinkTitleJob for link_id=#{link.id}: #{e.class}: #{e.message}"
+        )
+      end
 
       def link_params
         params.expect(link: [ :target_url ])

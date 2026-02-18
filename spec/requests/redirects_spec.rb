@@ -18,6 +18,17 @@ RSpec.describe "Redirects", type: :request do
       )
     end
 
+    it "still records a click when enqueue fails" do
+      allow(RecordClickJob).to receive(:perform_later).and_raise(ActiveJob::EnqueueError, "queue unavailable")
+
+      expect {
+        get "/redir12"
+      }.to change(ClickEvent, :count).by(1)
+
+      expect(response).to have_http_status(:found)
+      expect(response.headers["Location"]).to eq("https://example.com")
+    end
+
     it "returns 404 for unknown codes" do
       get "/unknown1"
 
