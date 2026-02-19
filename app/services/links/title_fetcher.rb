@@ -1,8 +1,11 @@
+require "faraday/follow_redirects"
+
 module Links
   class TitleFetcher
-    CONNECT_TIMEOUT = 3
-    READ_TIMEOUT = 5
-    USER_AGENT = "Mozilla/5.0 (compatible; LinkShortener/1.0)"
+    CONNECT_TIMEOUT = 5
+    READ_TIMEOUT = 10
+    MAX_REDIRECTS = 5
+    USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     TITLE_PATTERN = %r{<title[^>]*>(.*?)</title>}im
     OG_TITLE_PATTERN = %r{<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']}im
 
@@ -17,9 +20,9 @@ module Links
     def call
       return nil if @url.blank?
 
-      response = Faraday.get(@url) do |req|
+      response = connection.get(@url) do |req|
         req.headers["User-Agent"] = USER_AGENT
-        req.headers["Accept"] = "text/html"
+        req.headers["Accept"] = "text/html,application/xhtml+xml"
         req.options.open_timeout = CONNECT_TIMEOUT
         req.options.timeout = READ_TIMEOUT
       end
@@ -34,9 +37,18 @@ module Links
 
     private
 
+    def connection
+      @connection ||= Faraday.new do |f|
+        f.response :follow_redirects, limit: MAX_REDIRECTS
+        f.adapter Faraday.default_adapter
+      end
+    end
+
     def html_content?(response)
-      content_type = response.headers["content-type"].to_s
-      content_type.include?("text/html") || content_type.empty?
+      content_type = response.headers["content-type"].to_s.downcase
+      content_type.include?("text/html") ||
+        content_type.include?("application/xhtml+xml") ||
+        content_type.empty?
     end
 
     def extract_title(html)

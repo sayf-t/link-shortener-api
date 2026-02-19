@@ -14,6 +14,7 @@ gem "kamal", require: false
 gem "thruster", require: false
 
 gem "faraday", "~> 2.14"
+gem "faraday-follow_redirects"
 gem "geocoder", "~> 1.8"
 gem "rack-cors", "~> 3.0"
 gem "rack-attack", "~> 6.7"

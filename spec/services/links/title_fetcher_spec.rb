@@ -70,6 +70,16 @@ RSpec.describe Links::TitleFetcher do
       expect(described_class.call("https://example.com")).to be_nil
     end
 
+    it "follows redirects and extracts title from final page" do
+      stub_request(:get, "https://short.url/")
+        .to_return(status: 302, headers: { "Location" => "https://example.com/canonical" })
+      stub_request(:get, "https://example.com/canonical")
+        .to_return(status: 200, body: "<html><head><title>Final Page</title></head></html>",
+                   headers: { "Content-Type" => "text/html" })
+
+      expect(described_class.call("https://short.url/")).to eq("Final Page")
+    end
+
     it "handles non-string input without crashing" do
       expect(described_class.call({ foo: "bar" })).to be_nil
     end
